@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { generateHash,sign, generateKeyPairs, verifyCustom, signCustom, generateKeyPairsCustom, generateHashCustom } = require('./utils');
+const {  verifyCustom, signCustom, generateKeyPairsCustom, generateHashCustom } = require('./utils');
 // 1- generate Hash
 console.log("hash de salut est : " , generateHashCustom("salut"));
 // 2- generate keyPairs
