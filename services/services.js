@@ -3,6 +3,7 @@ const BlockChain = require("../models/blockchain")
 const Bloc = require("../models/bloc")
 const Transaction = require("../models/transaction")
 const TransactionReward = require("../models/transactionReward")
+const { verifyCustom } = require("../utils")
 const load = async (path) => {
     //returns blockchain
     let data = await fs.promises.readFile(path)
@@ -100,9 +101,36 @@ const getSolde = async (address) => {
     }
     return solde
 }
-const verifierTransaction = (transaction) => {
+const verifierTransaction = async (transaction) => {
     //returs true or flase
-}
+    // verifier la forme => ex: sender => non null et represente une clef public
+    if(transaction.sender=="" || transaction.receipient=="" 
+    || transaction.amount<=0 || transaction.fees<0 || transaction.signature =="" )
+    return {
+        valid : false,
+        error:"format incorrect"
+    }
+
+    let data = transaction.sender+transaction.amount+transaction.receipient+transaction.fees
+    let validSignature = verifyCustom(data,transaction.sender,transaction.signature)
+    if(!validSignature)
+        return {
+        valid : false,
+        error:"invalid signature"
+    }
+
+    let solde = await getSolde(transaction.sender)
+    if(solde < transaction.amount+transaction.fees)
+    return {
+        valid : false,
+        error:"pas de solde"
+    }
+
+    return {
+        valid : true
+    }
+
+}   
 const verifierBloc = (bloc) => {
     //returs true or flase
 }
