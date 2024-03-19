@@ -6,9 +6,7 @@ const TransactionReward = require("../models/transactionReward")
 const load = async (path) => {
     //returns blockchain
     let data = await fs.promises.readFile(path)
-
     data = JSON.parse(data).blockchain
-
     const blockchain = new BlockChain(data.name, data.blockReward, data.difficuly,
         data.cyrptoFunction, data.proofStyle)
 
@@ -30,7 +28,7 @@ const load = async (path) => {
 
 
 }
-load("../bd/blockchain_v1.json").then(res=>console.log(res));
+load("../bd/blockchain_v1.json").then(res => console.log(res));
 
 
 
@@ -78,8 +76,29 @@ const save = (blockchain, path) => {
             console.log("eerreur ecriture du fichier")
     });
 }
-const solde = (address) => {
+const getSolde = async (address) => {
     //returns amount of coins (float)
+    let solde = 0
+    let blockchain = await load("../bd/blockchain_v1.json")
+    let teteBlock = blockchain.lastBlock
+    while (teteBlock != null) {
+        let isMiner = address == teteBlock.transactionReward.sender
+        if (isMiner) // si miner
+            solde += parseFloat(teteBlock.transactionReward.amount)
+        // solde += blockchain.blockReward (seulement si le blockreward va etre fixe)
+        teteBlock.transactions.forEach(tx => {
+            if (isMiner)
+                solde += parseFloat(tx.fees)
+
+            if (tx.receipient == address)
+                solde += tx.amount
+            if (tx.sender == address)
+                solde -= (tx.amount + tx.fees)
+
+        })
+        teteBlock = teteBlock.previous
+    }
+    return solde
 }
 const verifierTransaction = (transaction) => {
     //returs true or flase
@@ -96,7 +115,7 @@ const verifierBlockchain = (blockchain) => {
 module.exports = {
     load,
     save,
-    solde,
+    getSolde,
     verifierBloc,
     verifierBlockchain,
     verifierTransaction,
