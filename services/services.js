@@ -133,6 +133,7 @@ const verifierTransaction = async (transaction) => {
 }   
 const verifierBloc = (bloc) => {
     //returs true or flase
+    
 }
 const ajouterBloc = (blockchain, bloc) => {
     //returs true or flase

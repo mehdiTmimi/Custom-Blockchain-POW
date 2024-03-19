@@ -10,3 +10,9 @@ class Bloc{
     }
 }
 module.exports=Bloc;
+
+
+Bx
+
+null<-B1 <- B2 <- B3 <- B4
+               <- Bx <- By <- Bz <- Ba
