@@ -3,7 +3,7 @@ const BlockChain = require("../models/blockchain")
 const Bloc = require("../models/bloc")
 const Transaction = require("../models/transaction")
 const TransactionReward = require("../models/transactionReward")
-const { verifyCustom } = require("../utils")
+const { verifyCustom, generateHashCustom } = require("../utils")
 const load = async (path) => {
     //returns blockchain
     let data = await fs.promises.readFile(path)
@@ -77,11 +77,10 @@ const save = (blockchain, path) => {
             console.log("eerreur ecriture du fichier")
     });
 }
-const getSolde = async (address) => {
+const getSolde = (address, bloc) => {
     //returns amount of coins (float)
     let solde = 0
-    let blockchain = await load("../bd/blockchain_v1.json")
-    let teteBlock = blockchain.lastBlock
+    let teteBlock = bloc
     while (teteBlock != null) {
         let isMiner = address == teteBlock.transactionReward.sender
         if (isMiner) // si miner
@@ -101,42 +100,93 @@ const getSolde = async (address) => {
     }
     return solde
 }
-const verifierTransaction = async (transaction) => {
+const verifierTransaction = (transaction, bloc) => {
     //returs true or flase
     // verifier la forme => ex: sender => non null et represente une clef public
-    if(transaction.sender=="" || transaction.receipient=="" 
-    || transaction.amount<=0 || transaction.fees<0 || transaction.signature =="" )
-    return {
-        valid : false,
-        error:"format incorrect"
-    }
-
-    let data = transaction.sender+transaction.amount+transaction.receipient+transaction.fees
-    let validSignature = verifyCustom(data,transaction.sender,transaction.signature)
-    if(!validSignature)
+    if (transaction.sender == "" || transaction.receipient == ""
+        || transaction.amount <= 0 || transaction.fees < 0 || transaction.signature == "")
         return {
-        valid : false,
-        error:"invalid signature"
-    }
+            valid: false,
+            error: "format incorrect"
+        }
 
-    let solde = await getSolde(transaction.sender)
-    if(solde < transaction.amount+transaction.fees)
+    let data = transaction.sender + transaction.amount + transaction.receipient + transaction.fees
+    let validSignature = verifyCustom(data, transaction.sender, transaction.signature)
+    if (!validSignature)
+        return {
+            valid: false,
+            error: "invalid signature"
+        }
+
+    let solde = getSolde(transaction.sender, bloc)
+    if (solde < transaction.amount + transaction.fees)
+        return {
+            valid: false,
+            error: "pas de solde"
+        }
+
     return {
-        valid : false,
-        error:"pas de solde"
+        valid: true
     }
 
-    return {
-        valid : true
-    }
-
-}   
+}
 const verifierBloc = (bloc) => {
     //returs true or flase
+    // forme
+    if (bloc.previousHash == "" || bloc.height < 0 || bloc.transactions.length > 20)
+        return {
+            valid: false,
+            error: "format invalid"
+        }
 
+    // liason
+    if (bloc.previous == null) {
+        if (bloc.height != 0)
+            return {
+                valid: false,
+                error: "height must be 0"
+            }
 
-    
-
+    }
+    else {
+        if (bloc.previous.hash != bloc.previousHash)
+            return {
+                valid: false,
+                error: "broken chain"
+            }
+        if (bloc.height != bloc.previous.height + 1)
+            return {
+                valid: false,
+                error: "height invalid"
+            }
+    }
+    // verifier hash
+    //previousHash+signatureTx1+..+signatureTxn+height+signatureReward+nonce
+    let signatures = bloc.transactions.map(tx => tx.signature).reduce((a, b) => a + b)
+    let data = bloc.previousHash + signatures + bloc.height + bloc.transactionReward.signature + bloc.nonce + bloc.difficulty
+    let hashData = generateHashCustom(data)
+    if (bloc.hash != hashData)
+        return {
+            valid: false,
+            error: "invalid hash"
+        }
+    // verifier difficulty
+    let str = "0".repeat(bloc.difficulty)
+    if (!bloc.hash.startsWith(str))
+        return {
+            valid: false,
+            error: "invalid proof of work"
+        }
+    for (let i = 0; i < bloc.transactions.length; i++) {
+        if (!verifierTransaction(bloc.transactions[i], bloc))
+            return {
+                valid: false,
+                error: "the bloc contains invalid transaction"
+            }
+    }
+    return {
+        valid: true
+    }
 }
 const ajouterBloc = (blockchain, bloc) => {
     //returs true or flase

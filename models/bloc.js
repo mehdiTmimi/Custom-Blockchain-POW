@@ -1,5 +1,5 @@
 class Bloc{
-    constructor(previousHash,nonce,height,hash,transactionReward,transactions,previous){
+    constructor(previousHash,nonce,height,hash,transactionReward,transactions,previous,difficulty){
         this.previousHash=previousHash;
         this.nonce=nonce;
         this.height=height;
@@ -7,12 +7,11 @@ class Bloc{
         this.transactionReward=transactionReward;
         this.transactions=transactions;
         this.previous=previous;
+        this.difficulty=difficulty
     }
 }
 module.exports=Bloc;
 
 
-Bx
 
-null<-B1 <- B2 <- B3 <- B4
-               <- Bx <- By <- Bz <- Ba
+               
