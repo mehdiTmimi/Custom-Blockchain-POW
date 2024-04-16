@@ -130,6 +130,16 @@ const verifierTransaction = (transaction, bloc) => {
     }
 
 }
+const getBlockByHash =(blockchain,blockHash)=>{
+    let tete = blockchain.lastBlock
+    while(tete!=null)
+    {
+        if(tete.hash==blockHash)
+            return tete;
+        tete=tete.previous
+    }
+    return null
+}
 const verifierBloc = (bloc) => {
     //returs true or flase
     // forme
@@ -140,21 +150,23 @@ const verifierBloc = (bloc) => {
         }
 
     // liason
-    if (bloc.previous == null) {
+    if (bloc.previousHash == null) {
         if (bloc.height != 0)
             return {
                 valid: false,
-                error: "height must be 0"
+                error: "height must be 0 => genesis block"
             }
 
     }
     else {
-        if (bloc.previous.hash != bloc.previousHash)
+        let previousBlock= getBlockByHash(blockchain,bloc.previousHash)
+        if(!previousBlock)
             return {
                 valid: false,
-                error: "broken chain"
+                error: "invalid previousHash"
             }
-        if (bloc.height != bloc.previous.height + 1)
+       
+        if (bloc.height != previousBlock.height + 1)
             return {
                 valid: false,
                 error: "height invalid"
@@ -190,9 +202,29 @@ const verifierBloc = (bloc) => {
 }
 const ajouterBloc = (blockchain, bloc) => {
     //returs true or flase
+    let res = verifierBloc(bloc)
+    if(!res)
+        return false;
+    if(blockchain.lastBlock.height!=bloc.height-1)
+        return false;
+    if(blockchain.lastBlock.hash!=bloc.previousHash)
+        return false;
+    bloc.previous=blockchain.lastBlock
+    blockchain.lastBlock=bloc
+    return true;
+
+
 }
 const verifierBlockchain = (blockchain) => {
     //returs true or flase
+    let tete = blockchain.lastBlock
+    while(tete!=null)
+    {
+        if(!verifierBloc(tete))
+            return false;
+        tete=tete.previous
+    }
+    return true
 }
 module.exports = {
     load,
