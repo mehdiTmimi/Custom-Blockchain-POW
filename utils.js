@@ -34,9 +34,14 @@ const verifyCustom = (data,publicKey,signature)=>{
     const isVerified = verify.verify(publicKey, signature, 'base64');
     return isVerified;
 }
+const isValidPOW = (hash,difficulty)=>{
+    let ch = "0".repeat(difficulty)
+    return hash.startsWith(ch)
+}
 module.exports = {
     generateHashCustom,
     generateKeyPairsCustom,
     signCustom,
-    verifyCustom
+    verifyCustom,
+    isValidPOW
 }

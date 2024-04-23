@@ -29,7 +29,7 @@ const load = async (path) => {
 
 
 }
-load("../bd/blockchain_v1.json").then(res => console.log(res));
+//load("../bd/blockchain_v1.json").then(res => console.log(res));
 
 
 
@@ -174,7 +174,11 @@ const verifierBloc = (bloc) => {
     }
     // verifier hash
     //previousHash+signatureTx1+..+signatureTxn+height+signatureReward+nonce
-    let signatures = bloc.transactions.map(tx => tx.signature).reduce((a, b) => a + b)
+    let signatures;
+    if(bloc.transactions.length==0)
+        signatures=""
+    else
+        signatures = bloc.transactions.map(tx => tx.signature).reduce((a, b) => a + b)
     let data = bloc.previousHash + signatures + bloc.height + bloc.transactionReward.signature + bloc.nonce + bloc.difficulty
     let hashData = generateHashCustom(data)
     if (bloc.hash != hashData)

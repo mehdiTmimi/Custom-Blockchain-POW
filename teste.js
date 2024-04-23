@@ -1,6 +1,8 @@
+const Bloc = require("./models/bloc");
 const BlockChain = require("./models/blockchain");
 const TransactionReward = require("./models/transactionReward");
-const { generateKeyPairsCustom, signCustom } = require("./utils");
+const { verifierBloc } = require("./services/services");
+const { generateKeyPairsCustom, signCustom, generateHashCustom, isValidPOW } = require("./utils");
 
 /* 
 1- creer une instance du Blockchain
@@ -18,18 +20,37 @@ const { generateKeyPairsCustom, signCustom } = require("./utils");
 8- save
 9- load 
 */
-const edhBlockchain = new BlockChain("EDH Blockchain",  50, 4, "sha256", "proof of work")
+const edhBlockchain = new BlockChain("EDH Blockchain", 50, 5, "sha256", "proof of work")
 // 2-generer 4 identite
-const users = [generateKeyPairsCustom(),generateKeyPairsCustom(),generateKeyPairsCustom(),generateKeyPairsCustom()]
+const users = [generateKeyPairsCustom(), generateKeyPairsCustom(), generateKeyPairsCustom(), generateKeyPairsCustom()]
 // 3- on va la sauter vu que on a pas de EDH pour le moment
 
 //4-
 // 4-a creer transaction du bloc reward
-const txReward =  new TransactionReward(users[0].publicKey,50,null)
+const txReward = new TransactionReward(users[0].publicKey, 50, null)
 //(miner+reward+height)
-let height = edhBlockchain.lastBlock==null ? 0:edhBlockchain.lastBlock.height+1;
+let height = edhBlockchain.lastBlock == null ? 0 : edhBlockchain.lastBlock.height + 1;
 
-const rawTxReward = txReward.sender+txReward.amount+height
-const singatureTxReward = signCustom(rawTxReward,users[0].privateKey)
+const rawTxReward = txReward.sender + txReward.amount + height
+const singatureTxReward = signCustom(rawTxReward, users[0].privateKey)
 
-txReward.signature=singatureTxReward
+txReward.signature = singatureTxReward
+
+// 4-b mining = previousHash+signatureTx1+..+signatureTxn+height+signatureReward+nonce
+
+let lastHash = edhBlockchain.lastBlock == null ? null : edhBlockchain.lastBlock.hash
+let nonce = 0
+const bloc1 = new Bloc(lastHash, nonce, height, null, txReward, [], null, edhBlockchain.difficulty)
+let hashBloc1
+while (true) {
+    let rawHashBloc1 = bloc1.previousHash + bloc1.height + bloc1.transactionReward.signature + bloc1.nonce
+    hashBloc1 = generateHashCustom(rawHashBloc1)
+    let res = isValidPOW(hashBloc1, edhBlockchain.difficulty)
+    if (res)
+        break;
+    else
+        bloc1.nonce++
+    console.log(hashBloc1);
+}
+console.log(hashBloc1);
+//console.log(verifierBloc(bloc1));
