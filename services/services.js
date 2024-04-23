@@ -130,13 +130,12 @@ const verifierTransaction = (transaction, bloc) => {
     }
 
 }
-const getBlockByHash =(blockchain,blockHash)=>{
+const getBlockByHash = (blockchain, blockHash) => {
     let tete = blockchain.lastBlock
-    while(tete!=null)
-    {
-        if(tete.hash==blockHash)
+    while (tete != null) {
+        if (tete.hash == blockHash)
             return tete;
-        tete=tete.previous
+        tete = tete.previous
     }
     return null
 }
@@ -159,13 +158,13 @@ const verifierBloc = (bloc) => {
 
     }
     else {
-        let previousBlock= getBlockByHash(blockchain,bloc.previousHash)
-        if(!previousBlock)
+        let previousBlock = getBlockByHash(blockchain, bloc.previousHash)
+        if (!previousBlock)
             return {
                 valid: false,
                 error: "invalid previousHash"
             }
-       
+
         if (bloc.height != previousBlock.height + 1)
             return {
                 valid: false,
@@ -175,8 +174,8 @@ const verifierBloc = (bloc) => {
     // verifier hash
     //previousHash+signatureTx1+..+signatureTxn+height+signatureReward+nonce
     let signatures;
-    if(bloc.transactions.length==0)
-        signatures=""
+    if (bloc.transactions.length == 0)
+        signatures = ""
     else
         signatures = bloc.transactions.map(tx => tx.signature).reduce((a, b) => a + b)
     let data = bloc.previousHash + signatures + bloc.height + bloc.transactionReward.signature + bloc.nonce + bloc.difficulty
@@ -207,14 +206,21 @@ const verifierBloc = (bloc) => {
 const ajouterBloc = (blockchain, bloc) => {
     //returs true or flase
     let res = verifierBloc(bloc)
-    if(!res)
+    if (!res)
         return false;
-    if(blockchain.lastBlock.height!=bloc.height-1)
-        return false;
-    if(blockchain.lastBlock.hash!=bloc.previousHash)
-        return false;
-    bloc.previous=blockchain.lastBlock
-    blockchain.lastBlock=bloc
+    // verifier is genesis bloc
+    if (blockchain.lastBlock == null) {
+        if (bloc.previousHash != null || bloc.height != 0)
+            return false
+    }
+    else {
+        if (blockchain.lastBlock.height != bloc.height - 1)
+            return false;
+        if (blockchain.lastBlock.hash != bloc.previousHash)
+            return false;
+    }
+    bloc.previous = blockchain.lastBlock
+    blockchain.lastBlock = bloc
     return true;
 
 
@@ -222,11 +228,10 @@ const ajouterBloc = (blockchain, bloc) => {
 const verifierBlockchain = (blockchain) => {
     //returs true or flase
     let tete = blockchain.lastBlock
-    while(tete!=null)
-    {
-        if(!verifierBloc(tete))
+    while (tete != null) {
+        if (!verifierBloc(tete))
             return false;
-        tete=tete.previous
+        tete = tete.previous
     }
     return true
 }

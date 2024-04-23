@@ -1,7 +1,7 @@
 const Bloc = require("./models/bloc");
 const BlockChain = require("./models/blockchain");
 const TransactionReward = require("./models/transactionReward");
-const { verifierBloc } = require("./services/services");
+const { verifierBloc, ajouterBloc } = require("./services/services");
 const { generateKeyPairsCustom, signCustom, generateHashCustom, isValidPOW } = require("./utils");
 
 /* 
@@ -20,7 +20,7 @@ const { generateKeyPairsCustom, signCustom, generateHashCustom, isValidPOW } = r
 8- save
 9- load 
 */
-const edhBlockchain = new BlockChain("EDH Blockchain", 50, 5, "sha256", "proof of work")
+const edhBlockchain = new BlockChain("EDH Blockchain", 50, 4, "sha256", "proof of work")
 // 2-generer 4 identite
 const users = [generateKeyPairsCustom(), generateKeyPairsCustom(), generateKeyPairsCustom(), generateKeyPairsCustom()]
 // 3- on va la sauter vu que on a pas de EDH pour le moment
@@ -54,4 +54,8 @@ while (true) {
 }
 console.log(hashBloc1);
 console.log("nonce est : " + bloc1.nonce)
+
+//5- ajouter le bloc a la blockchain
+let resAjout= ajouterBloc(edhBlockchain,bloc1)
+console.log(resAjout);
 //console.log(verifierBloc(bloc1));
