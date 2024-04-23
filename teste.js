@@ -50,7 +50,8 @@ while (true) {
         break;
     else
         bloc1.nonce++
-    console.log(hashBloc1);
+    //console.log(hashBloc1);
 }
 console.log(hashBloc1);
+console.log("nonce est : " + bloc1.nonce)
 //console.log(verifierBloc(bloc1));
