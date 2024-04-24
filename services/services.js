@@ -178,8 +178,13 @@ const verifierBloc = (bloc) => {
         signatures = ""
     else
         signatures = bloc.transactions.map(tx => tx.signature).reduce((a, b) => a + b)
-    let data = bloc.previousHash + signatures + bloc.height + bloc.transactionReward.signature + bloc.nonce + bloc.difficulty
+    let data
+    if (bloc.previousHash == null)
+        data = signatures + bloc.height + bloc.transactionReward.signature + bloc.nonce + bloc.difficulty
+    else data = bloc.previousHash + signatures + bloc.height + bloc.transactionReward.signature + bloc.nonce + bloc.difficulty
+    console.log(data);
     let hashData = generateHashCustom(data)
+  
     if (bloc.hash != hashData)
         return {
             valid: false,
@@ -205,8 +210,8 @@ const verifierBloc = (bloc) => {
 }
 const ajouterBloc = (blockchain, bloc) => {
     //returs true or flase
-    let res = verifierBloc(bloc)
-    if (!res)
+    let { valid } = verifierBloc(bloc)
+    if (!valid)
         return false;
     // verifier is genesis bloc
     if (blockchain.lastBlock == null) {

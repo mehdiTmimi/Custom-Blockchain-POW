@@ -43,7 +43,12 @@ let nonce = 0
 const bloc1 = new Bloc(lastHash, nonce, height, null, txReward, [], null, edhBlockchain.difficulty)
 let hashBloc1
 while (true) {
-    let rawHashBloc1 = bloc1.previousHash + bloc1.height + bloc1.transactionReward.signature + bloc1.nonce
+    let rawHashBloc1;
+    if (bloc1.previousHash == null)
+        rawHashBloc1 =bloc1.height + bloc1.transactionReward.signature + bloc1.nonce + bloc1.difficulty
+    else rawHashBloc1 = bloc1.previousHash + bloc1.height + bloc1.transactionReward.signature + bloc1.nonce + bloc1.difficulty
+  
+
     hashBloc1 = generateHashCustom(rawHashBloc1)
     let res = isValidPOW(hashBloc1, edhBlockchain.difficulty)
     if (res)
@@ -54,8 +59,8 @@ while (true) {
 }
 console.log(hashBloc1);
 console.log("nonce est : " + bloc1.nonce)
-
+bloc1.hash=hashBloc1
 //5- ajouter le bloc a la blockchain
-let resAjout= ajouterBloc(edhBlockchain,bloc1)
+let resAjout = ajouterBloc(edhBlockchain, bloc1)
 console.log(resAjout);
 //console.log(verifierBloc(bloc1));
