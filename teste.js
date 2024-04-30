@@ -47,8 +47,7 @@ while (true) {
     if (bloc1.previousHash == null)
         rawHashBloc1 =bloc1.height + bloc1.transactionReward.signature + bloc1.nonce + bloc1.difficulty
     else rawHashBloc1 = bloc1.previousHash + bloc1.height + bloc1.transactionReward.signature + bloc1.nonce + bloc1.difficulty
-  
-
+    console.log(rawHashBloc1s);
     hashBloc1 = generateHashCustom(rawHashBloc1)
     let res = isValidPOW(hashBloc1, edhBlockchain.difficulty)
     if (res)
