@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.8.2 <0.9.0;
+
+/**
+ * @title Storage
+ * @dev Store & retrieve value in a variable
+ * @custom:dev-run-script ./scripts/deploy_with_ethers.ts
+ */
+contract Funding {
+
+    uint256 public seuil ;
+    uint8 public ratio;// TODO : constante
+    address public owner ;
+    mapping(address => uint256) public donations;
+    address public receipient;
+    bool public status;
+   
+    function changeOwner(address _owner) public {
+        if(msg.sender==owner)
+            owner = _owner;
+    }
+
+   /*
+   TODO:
+    functions: 
+    constructor => init : seuil, owner, receipient, status
+    donate => send ration*amount -> owner 
+    redeem => teste seuil => si true => send all solde to receipient
+        => update status false
+        => ! self destruct !
+    receive et fallback
+   */
+}
